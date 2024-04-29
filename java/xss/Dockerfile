@@ -1,8 +1,7 @@
 ### STATIC LAYER
 FROM openjdk:8-jdk-alpine as builder
+FROM maven:3.9.6-eclipse-temurin-21-alpine as builder
 LABEL MAINTAINER="Glenn ten Cate <glenn.ten.cate@gmail.com>"
-
-RUN  apk add maven
 
 ### DYNAMIC LAYER
 FROM builder
