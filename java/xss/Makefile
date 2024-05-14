@@ -7,20 +7,22 @@
 TAG     = "latest"
 NAME	!= basename $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DOCKER_IMG := $(NAME):$(TAG)
+
+# Local repository to speed up builds - absolute path
+MAVEN_REPO = ~/maven-repo
 MAVEN_TAG = 3.9.6-eclipse-temurin-21-alpine
 NETWORK = labs
+PORT    = 5000
+TARGET = target/app.jar
+WORKDIR = skf
+
 # Enforce Bash as shell, as that makes it easier to script
 SHELL := /bin/bash
 
 SOURCES = $(wildcard **/*.java)
-TARGET = target/app.jar
-WORKDIR = skf
-
-# Local repository to speed up builds - absolute path
-MAVEN_REPO = ~/maven-repo
 
 # Some hard-coded variables
-PORT    = 5000
+
 COL_BLUE=\033[1;34m
 COL_BOLD=\033[1m
 COL_GREEN=\033[32m
@@ -39,11 +41,11 @@ help: # Display useful commands
 	expand -t25
 
 # Recipes that aren't filenames: This ensures that they always will be executed
-.PHONY: image run
+.PHONY: configuration container image network run
 
 $(MAVEN_REPO):
 	@mkdir --parent $(MAVEN_REPO); \
-	echo "Generated $(MAVEN_REPO) for first use..."
+	echo -e "Generated ${COL_BOLD}$(MAVEN_REPO)${COL_RESET} for first use..."
 
 $(TARGET): pom.xml $(SOURCES) $(MAVEN_REPO)
 	docker run --rm -it \
@@ -53,6 +55,17 @@ $(TARGET): pom.xml $(SOURCES) $(MAVEN_REPO)
 	--workdir /$(WORKDIR) \
 	maven:$(MAVEN_TAG) \
 	mvn -Dmaven.repo.local=/srv/maven-repo -Dmaven.test.skip=true package
+
+configuration: # Display current configuration
+	@echo -e "Container name:                            ${COL_BOLD}$(NAME)${COL_RESET}" && \
+	echo -e "Docker image name:                         ${COL_BOLD}$(DOCKER_IMG)${COL_RESET}" && \
+	echo -e "Maven image used for building and running: ${COL_BOLD}maven:$(MAVEN_TAG)${COL_RESET}" && \
+	echo -e "Local Maven cache:                         ${COL_BOLD}$(MAVEN_REPO)${COL_RESET}" && \
+	echo -e "Docker network name:                       ${COL_BOLD}$(NETWORK)${COL_RESET}" && \
+	echo -e "Listening port number:                     ${COL_BOLD}$(PORT)${COL_RESET}" && \
+	echo -e "Target application:                        ${COL_BOLD}$(TARGET)${COL_RESET}" && \
+	echo -e "Workdir:                                   ${COL_BOLD}$(WORKDIR)${COL_RESET}" && \
+	echo -e "\nAny of these values can be changed in the Makefile itself"
 
 build: target/app.jar # Build application using a Docker container
 
