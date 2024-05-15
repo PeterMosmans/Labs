@@ -74,11 +74,26 @@ image: # Build Docker image
 	@echo "Building $(DOCKER_IMG)..." && \
 	DOCKER_BUILDKIT=1 docker build . -t $(DOCKER_IMG)
 
+imageamd: # Build Docker image, forcing linux/amd64 platform
+	@echo "Building $(DOCKER_IMG) for linux/amd64..." && \
+	DOCKER_BUILDKIT=1 docker build . -t $(DOCKER_IMG) --platform linux/amd64
+
 run: $(TARGET) # Run app locally using a Java container
 	@echo "Will be running maven:$(MAVEN_TAG) on port $(PORT) - press Ctrl-C to stop" && \
 	docker run --rm -it \
 	-u $$UID \
 	-p $(PORT):5000 \
+	-v $$PWD:/$(WORKDIR) \
+	--workdir /$(WORKDIR) \
+	maven:$(MAVEN_TAG) \
+	java -jar /$(WORKDIR)/$(TARGET)
+
+runamd: $(TARGET) # Run app locally using a Java container, forcing linux/amd64 platform
+	@echo "Will be running maven:$(MAVEN_TAG) for linux/amd64 on port $(PORT) - press Ctrl-C to stop" && \
+	docker run --rm -it \
+	-u $$UID \
+	-p $(PORT):5000 \
+	--platform linux/amd64 \
 	-v $$PWD:/$(WORKDIR) \
 	--workdir /$(WORKDIR) \
 	maven:$(MAVEN_TAG) \
