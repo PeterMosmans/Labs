@@ -5,7 +5,8 @@
 
 # TAG	!= git tag|tail -1
 TAG     = "latest"
-NAME	!= basename $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+DIRNAME != basename $(dir $(abspath $(lastword $(MAKEFILE_LIST)))) 2>/dev/null
+NAME    := $(if $(DIRNAME),$(DIRNAME),test)
 DOCKER_IMG := $(NAME):$(TAG)
 
 # Local repository to speed up builds - absolute path
