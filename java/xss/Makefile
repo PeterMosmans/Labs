@@ -45,11 +45,11 @@ help: # Display useful commands
 .PHONY: configuration container image network run
 
 $(MAVEN_REPO):
-	@mkdir --parent $(MAVEN_REPO); \
+	@mkdir -p $(MAVEN_REPO); \
 	echo -e "Generated ${COL_BOLD}$(MAVEN_REPO)${COL_RESET} for first use..."
 
 $(TARGET): pom.xml $(SOURCES) $(MAVEN_REPO)
-	docker run --rm -it \
+	@docker run --rm -it \
 	-u $$UID \
 	-v $(MAVEN_REPO):/srv/maven-repo \
 	-v $$PWD:/$(WORKDIR) \
